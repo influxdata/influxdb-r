@@ -1,0 +1,19 @@
+Package: influxdb
+Type: Package
+Title: R bindings for InfluxDB time series database
+Version: 0.0.0
+Date: 2013-12-06
+Author: Joe Cheng <joe@rstudio.com>
+Maintainer: Joe Cheng <joe@rstudio.com>
+Description: Check out InfluxDB at http://influxdb.org.
+License: MIT
+Depends:
+    R (>= 2.14.1),
+    methods
+Imports:
+    utils,
+    httr,
+    rjson
+URL: http://github.com/influxdb/influxdb-r
+Collate:
+    'influxdb.R'
