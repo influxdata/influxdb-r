@@ -18,7 +18,7 @@ NULL
 #'
 #' @export
 influxdb_query <- function(host, port, username, password, database, query,
-                        time_precision=c("s", "m", "u")) {
+                           time_precision=c("s", "m", "u"),stringsAsFactors=FALSE) {
   response <- GET(
     "", scheme = "http", hostname = host, port = port,
     path = sprintf("db/%s/series", URLencode(database)),
@@ -40,17 +40,24 @@ influxdb_query <- function(host, port, username, password, database, query,
   # something nicer to work with. I'm sure there is a faster/better way to
   # do this.
   responseObjects <- sapply(response_data, function(seriesObj) {
-    # TODO: Should stringsAsFactors be used or not?
+
     df <- as.data.frame(t(sapply(seriesObj$points, rbind)))
     # It's a data frame but each column is a list instead of atomic vector; 
     # let's fix that
-    df <- as.data.frame(lapply(df, unlist))
+    df <- as.data.frame(lapply(df, unlist_na ),stringsAsFactors=stringsAsFactors) ## we need to transforms the NULL values into NA, otherwise they are dropped by unlist
+    ## added a stringsAsFactors option    
     names(df) <- seriesObj$columns
     structure(list(df), names=seriesObj$name)
   })
   return(responseObjects)
 }
 
+# unlist_na  transforms NULL into NA before creating a vector
+# this prevent the NULL values returned by fromJSON to be dropped
+unlist_na <- function(l){
+  l[sapply(l, is.null)] <- NA  
+  unlist(l) 
+}
 
 #' Write data to an InfluxDB database
 #' 
@@ -116,6 +123,7 @@ format_data <- function(name,df){
 
 drop_names <- function(x){
   x_list <- as.list(x)
+  x_list[sapply(x_list, is.na)] <- list(NULL) ## Transforms NA values into NULL. This is required for toJSON  to provide the rigth representation of missing data
   names(x_list) <-NULL
   x_list
 }
