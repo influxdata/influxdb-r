@@ -1,7 +1,3 @@
-#' @import httr
-#' @import rjson
-NULL
-
 #' Query an InfluxDB database
 #' 
 #' @param host Character vector with IP address or hostname
@@ -15,21 +11,28 @@ NULL
 #'   from epoch (January 1, 1970, 00:00:00 UTC).
 #' @return A named list of data frames, where the names are the series names,
 #'   and the data frames contain the points.
-#'
 #' @export
-influxdb_query <- function(host, port, username, password, database, query,
-                        time_precision=c("s", "m", "u")) {
-  response <- GET(
-    "", scheme = "http", hostname = host, port = port,
-    path = sprintf("db/%s/series", URLencode(database)),
-    query = list(
-      u = username,
-      p = password,
-      q = query,
-      time_precision = match.arg(time_precision),
-      chunked = "false"
+influxdb_query <- function(host, port, username, password, database, query, time_precision=c("s", "m", "u")) {
+  json <- influxdb_queryJson(host, port, username, password, database, query, time_precision=c("s", "m", "u"))
+  asDataFrame <- influxdb_json2dataframe(json)
+  return (asDataFrame)
+}
+
+#' @rdname influxdb_query
+#' @export
+influxdb_queryJson <- function(host, port, username, password, database, query, time_precision=c("s", "m", "u")) {
+  responseObjects <- 
+    response <- GET(
+      "", scheme = "http", hostname = host, port = port,
+      path = sprintf("db/%s/series", URLencode(database)),
+      query = list(
+        u = username,
+        p = password,
+        q = query,
+        time_precision = match.arg(time_precision),
+        chunked = "false"
+      )
     )
-  )
   
   # Check for error. Not familiar enough with httr, there may be other ways it
   # communicates failure.
@@ -38,8 +41,15 @@ influxdb_query <- function(host, port, username, password, database, query,
       warning(rawToChar(response$content))
     stop("Influx query failed with HTTP status code ", response$status_code)
   }
-  
-  response_data <- fromJSON(rawToChar(response$content))
+  return (rawToChar(response$content))
+}
+
+#' Transform influxdb json result into a data.frame
+#' @param json raw influxdb json result
+#' @return json as data.frame
+#' @export
+influxdb_json2dataframe <- function(json){
+  response_data <- fromJSON(json)
   
   # response_data at this point is a hot mess of nested lists; turn it into
   # something nicer to work with. I'm sure there is a faster/better way to
@@ -55,3 +65,4 @@ influxdb_query <- function(host, port, username, password, database, query,
   })
   return(responseObjects)
 }
+
