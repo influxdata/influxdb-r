@@ -4,7 +4,7 @@
 \alias{influxdb_json2dataframe}
 \title{Transform influxdb json result into a data.frame}
 \usage{
-influxdb_json2dataframe(json)
+influxdb_json2dataframe(json, stringsAsFactors = FALSE)
 }
 \arguments{
 \item{json}{raw influxdb json result}

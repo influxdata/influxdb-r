@@ -6,7 +6,7 @@
 \title{Query an InfluxDB database}
 \usage{
 influxdb_query(host, port, username, password, database, query,
-  time_precision = c("s", "m", "u"))
+  time_precision = c("s", "m", "u"), stringsAsFactors = FALSE)
 
 influxdb_queryJson(host, port, username, password, database, query,
   time_precision = c("s", "m", "u"))

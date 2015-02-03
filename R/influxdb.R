@@ -17,9 +17,9 @@ NULL
 #'   and the data frames contain the points.
 #'
 #' @export
-influxdb_query <- function(host, port, username, password, database, query, time_precision=c("s", "m", "u")) {
+influxdb_query <- function(host, port, username, password, database, query, time_precision=c("s", "m", "u"), stringsAsFactors=FALSE) {
   json <- influxdb_queryJson(host, port, username, password, database, query, time_precision=c("s", "m", "u"))
-  asDataFrame <- influxdb_json2dataframe(json)
+  asDataFrame <- influxdb_json2dataframe(json, stringsAsFactors)
   return(asDataFrame)
 }
 
@@ -47,11 +47,11 @@ influxdb_queryJson <- function(host, port, username, password, database, query, 
 #' @param json raw influxdb json result
 #' @return json as data.frame
 #' @export
-influxdb_json2dataframe <- function(json){
+influxdb_json2dataframe <- function(json, stringsAsFactors=FALSE){
   response_data <- fromJSON(json, nullValue=NA)
   responseObjects <- sapply(response_data, function(seriesObj) {
     df <- as.data.frame(t(sapply(seriesObj$points, rbind)))
-    df <- columnListToVector(df)
+    df <- as.data.frame(lapply(df, unlist), stringsAsFactors=stringsAsFactors)
     names(df) <- seriesObj$columns
     structure(list(df), names=seriesObj$name)
   })
@@ -125,5 +125,3 @@ drop_names <- function(x){
   names(x_list) <-NULL
   x_list
 }
-
-columnListToVector <- function(df) { as.data.frame(lapply(df, unlist)) }
