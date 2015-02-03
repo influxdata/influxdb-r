@@ -3,6 +3,7 @@
 export(influxdb_json2dataframe)
 export(influxdb_query)
 export(influxdb_queryJson)
+export(influxdb_write)
 import(RJSONIO)
 import(httr)
 import(utils)
