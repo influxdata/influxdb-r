@@ -51,7 +51,7 @@ influxdb_queryJson <- function(host, port, username, password, database, query, 
 influxdb_json2dataframe <- function(json){
   response_data <- fromJSON(json, nullValue=NA)
   responseObjects <- sapply(response_data, function(seriesObj) {
-    df <- as.data.frame(t(sapply(seriesObj$points, cbind)))
+    df <- as.data.frame(t(sapply(seriesObj$points, rbind)))
     df <- columnListToVector(df)
     names(df) <- seriesObj$columns
     structure(list(df), names=seriesObj$name)
