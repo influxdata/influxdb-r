@@ -1,7 +1,7 @@
 Package: influxdb
 Type: Package
 Title: R bindings for InfluxDB time series database
-Description: Read (only) data from InfluxDB. Works with InfluxDB >= v0.8.0
+Description: Read and write data from/to InfluxDB. Works with InfluxDB >= v0.8.0
 Version: 1.0.0
 Date: 2015-02-03
 Author: Joe Cheng <joe@rstudio.com>
