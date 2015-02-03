@@ -13,7 +13,7 @@ Depends:
 Imports:
     utils,
     httr,
-    rjson
+    RJSONIO
 URL: http://github.com/influxdb/influxdb-r
 Collate:
     'influxdb.R'

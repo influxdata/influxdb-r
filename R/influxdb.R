@@ -49,20 +49,14 @@ influxdb_queryJson <- function(host, port, username, password, database, query, 
 #' @return json as data.frame
 #' @export
 influxdb_json2dataframe <- function(json){
-  response_data <- fromJSON(json)
-  
-  # response_data at this point is a hot mess of nested lists; turn it into
-  # something nicer to work with. I'm sure there is a faster/better way to
-  # do this.
+  response_data <- fromJSON(json, nullValue=NA)
   responseObjects <- sapply(response_data, function(seriesObj) {
-    # TODO: Should stringsAsFactors be used or not?
-    df <- as.data.frame(t(sapply(seriesObj$points, rbind)))
-    # It's a data frame but each column is a list instead of atomic vector; 
-    # let's fix that
-    df <- as.data.frame(lapply(df, unlist))
+    df <- as.data.frame(t(sapply(seriesObj$points, cbind)))
+    df <- columnListToVector(df)
     names(df) <- seriesObj$columns
     structure(list(df), names=seriesObj$name)
   })
   return(responseObjects)
 }
 
+columnListToVector <- function(df) { as.data.frame(lapply(df, unlist)) }
