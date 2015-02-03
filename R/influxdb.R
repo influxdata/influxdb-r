@@ -1,5 +1,6 @@
 #' Query an InfluxDB database
 #' 
+#' @import utils httr RJSONIO
 #' @param host Character vector with IP address or hostname
 #' @param port Port number
 #' @param username InfluxDB user
