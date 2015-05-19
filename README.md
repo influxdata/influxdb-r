@@ -43,4 +43,4 @@ Write to InfluxDB
 
 
 
-
+Patched By [Anomaly Detection](https://anomaly.io)
