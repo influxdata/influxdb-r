@@ -40,7 +40,7 @@ Write to InfluxDB
 > userStatus <- data.frame(userId=c(122,333), countryName=c("online","offline"))
 > all <- structure(list(country,userStatus), names=c("country.serie", "userStatus"))
 > influxdb_write('sandbox.influxdb.org', 9061, 'myLogin', 'myPassword', 'myDataBase', all)
+```
 
 
-
-Patched By [Anomaly Detection](https://anomaly.io)
+Pull request proposal By [Anomaly Detection](https://anomaly.io)
