@@ -1,8 +1,8 @@
-\name{influxdb_query}
-\alias{influxdb_query}
-\title{Query an InfluxDB database}
+\name{influxdb_write}
+\alias{influxdb_write}
+\title{Write data to an InfluxDB database}
 \usage{
-influxdb_query(host, port, username, password, database, query,
+influxdb_write(host, port, username, password, database, series,
   time_precision = c("s", "m", "u"))
 }
 \arguments{
@@ -17,8 +17,9 @@ influxdb_query(host, port, username, password, database, query,
 
   \item{database}{The name of the database}
 
-  \item{query}{Character vector containing the InfluxDB
-  query}
+  \item{series}{A named list of data frames, where the
+  names are the series names, and the data frames contain
+  the points.}
 
   \item{time_precision}{Specifies whether the time should
   be returned in seconds (\code{s}), milliseconds
@@ -26,10 +27,9 @@ influxdb_query(host, port, username, password, database, query,
   (January 1, 1970, 00:00:00 UTC).}
 }
 \value{
-A named list of data frames, where the names are the series
-names, and the data frames contain the points.
+The httr response object (invisibly)
 }
 \description{
-Query an InfluxDB database
+Write data to an InfluxDB database
 }
 
