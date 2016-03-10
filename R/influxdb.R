@@ -25,12 +25,12 @@ influxdb_query <- function (host, port = 8086, database, query, username = NULL,
   if (response$status_code < 200 || response$status_code >= 300) {
     stop("Influx query failed with HTTP status code ", response$status_code)
   } else {
-    # From json to a nested list
+    # From json to a nested list.
     response_data <- rjson::fromJSON(rawToChar(response$content))
     if (length(response_data$results[[1]]) > 0) {
-      # Get a list of dataframe (one for every table)
+      # Get a list of dataframe (one for every table).
       dfLst <- lapply(response_data$results[[1]]$series, toDataFrame)
-      # Fix the names
+      # Fix the names.
       dfLst <- structure(dfLst, names = getNames(response_data$results[[1]]$series))
     }
     else {
