@@ -12,46 +12,62 @@ NULL
 #'   and the data frames contain the points.
 #'
 #' @export
-influxdb_query <- function (host, port, database, query) {
+influxdb_query <- function (host, port = 8086, database, query, username = NULL, password = NULL) {
   
-  url <- paste0(host, ":", port, "/query?")
-  args <- list(db = database,
-               q = query)
-  
-  getCommand <- httr::GET(url, query=args)
+  response <- httr::GET(url = host, port = port, path = "query",
+                        query = list(db = database,
+                                     q = query,
+                                     u = username,
+                                     p = password))
   
   # Check for error. Not familiar enough with httr, there may be other ways it
   # communicates failure.
-  if (getCommand$status < 200 || getCommand$status >= 300) {
-    
-    stop("Influx query failed with HTTP status code ", getCommand$status)
-  
+  if (response$status_code < 200 || response$status_code >= 300) {
+    stop("Influx query failed with HTTP status code ", response$status_code)
   } else {
-    
-    response <- httr::content(getCommand, "parsed")
-    if (is.null(response$results[[1]]$error)) {
-      response <- response$results[[1]]$series[[1]]
-      colNames <- unlist(response$columns)
-      nr <- length(response$values)
-      
-      # build the dataframe
-      for (i in 1:nr) {
-        r <- t(unlist(response$values[[i]]))
-        if (i == 1) {
-          output <- data.frame(r, stringsAsFactors = FALSE)
-        } else {
-          output <- rbind(output, data.frame(r))
-        }
-      }
-      colnames(output) <- colNames
-      return(output)
-      
-    } else {
-      
-      warning(paste0("Influx returned the following error: ", response$results[[1]]$error))
-      return(data.frame())
-      
+    # From json to a nested list
+    response_data <- rjson::fromJSON(rawToChar(response$content))
+    if (length(response_data$results[[1]]) > 0) {
+      # Get a list of dataframe (one for every table)
+      dfLst <- lapply(response_data$results[[1]]$series, toDataFrame)
+      # Fix the names
+      dfLst <- structure(dfLst, names = getNames(response_data$results[[1]]$series))
+    }
+    else {
+      warning("Empty response from Influx")
+      dfLst <- data.frame()
     }
   }
+  return(dfLst)
+  
+}
+
+# Need this function to transform every element in the list response_data$results[[1]]$series
+# to a dataframe.
+toDataFrame <- function(lst) {
+  
+  df <- as.data.frame(t(sapply(lst$values, rbind)), stringsAsFactors = FALSE)
+  nullCol <- apply(df, 2, allNull)
+  df <- df[,!nullCol]
+  df <- as.data.frame(lapply(df, unlist), stringsAsFactors = FALSE)
+  colnames(df) <- lst$columns[!nullCol]
+  
+  return(df)
+}
+
+# If we perform a query on multiple table (like "SELECT * FROM cpu,temperature") 
+# the results will be mixed up. We need this function to check if a column is full of "NULL"
+# values.
+allNull <- function(lst) {
+  
+  t <- lst == "NULL"
+  ifelse(sum(t) == length(lst), return(TRUE), return(FALSE))
+  
+}
+
+# This function simply returns the names of the dataframes.
+getNames <- function(lst) {
+  
+  return(sapply(lst, function(x){return(x$name)}))
   
 }
